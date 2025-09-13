@@ -58,7 +58,7 @@ public class CatalogInitialData : IInitialData
                     Description = "This phone is the company's biggest change to its flagship smartphone in years. It includes a borderless.",
                     ImageFile = "product-5.png",
                     Price = 380.00M,
-                    Category = new List<string> { "Smart Phone" }
+                    Category = ["Smart Phone"]
                 },
                 new Product()
                 {
