@@ -1,6 +1,9 @@
+using Discount.Grpc;
+
 var builder = WebApplication.CreateBuilder(args);
 
 //Add services to the container.
+//Application Services
 var assembly = typeof(Program).Assembly;
 builder.Services.AddMediatR(config =>
 {
@@ -9,6 +12,7 @@ builder.Services.AddMediatR(config =>
     config.AddOpenBehavior(typeof(LoggingBehaviour<,>));
 });
 builder.Services.AddValidatorsFromAssembly(assembly);
+//Data Services
 builder.Services.AddCarter();
 builder.Services.AddMarten(opts =>
 {
@@ -17,6 +21,22 @@ builder.Services.AddMarten(opts =>
 }).UseLightweightSessions();
 //if (builder.Environment.IsDevelopment())
 //    builder.Services.InitializeMartenWith<CatalogInitialData>();
+
+//Grpc Services
+builder.Services.AddGrpcClient<DiscountProtoService.DiscountProtoServiceClient>(options =>
+{
+    options.Address = new Uri(builder.Configuration["GrpcSettings:DiscountUrl"]!);
+}).ConfigurePrimaryHttpMessageHandler(() => //only for developmental purpose for docker compose
+{
+    var handler = new HttpClientHandler
+    {
+        ServerCertificateCustomValidationCallback = 
+        HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+    };
+    return handler;
+});
+
+//Cross-Cutting Services
 builder.Services.AddExceptionHandler<CustomExceptionHandler>();
 builder.Services.AddHealthChecks()
     .AddNpgSql(builder.Configuration.GetConnectionString("Database")!)
